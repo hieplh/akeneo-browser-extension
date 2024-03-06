@@ -26,7 +26,7 @@ module.exports = {
         {
           from: path.resolve("public"),
           to: path.resolve("dist"),
-        }
+        },
       ],
     }),
   ],
@@ -59,6 +59,7 @@ module.exports = {
           },
         },
       },
+      { test: /\.json$/, loader: "json-loader" },
     ],
   },
   resolve: {

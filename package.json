@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "webpack --config webpack.config.cjs",
-    "mkdir": "node createFolderRelease.mjs",
-    "zip": "bestzip release/akeneo-extension-browser.zip dist/*",
-    "release": "npm run build && npm run mkdir && npm run zip"
+    "release": "npm run build && node release.mjs"
   },
   "dependencies": {
     "@types/chrome": "^0.0.261",
+    "archiver": "^7.0.0",
     "chrome-types": "^0.1.269",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -19,13 +18,13 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
+    "@types/archiver": "^6.0.2",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",
     "babel-loader": "^9.1.3",
-    "bestzip": "^2.2.1",
     "copy-webpack-plugin": "^12.0.2",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",

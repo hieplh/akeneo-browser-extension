@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Akeneo Extension",
+  "version": "1.0",
+  "description": "Custom extension for Akeneo",
+  "icons": {
+    "16": "images/logo16.png",
+    "48": "images/logo48.png",
+    "128": "images/logo128.png"
+  },
+  "host_permissions": [
+    "https://akeneo.cloud.bluecomvn.com/*",
+    "http://akeneo.cloud.bluecomvn.com/*"
+  ],
+  "permissions": [
+    "cookies",
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://akeneo.cloud.bluecomvn.com/*",
+        "http://akeneo.cloud.bluecomvn.com/*"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "js": [
+        "scripts/product_content.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "images/logo16.png",
+      "48": "images/logo48.png",
+      "128": "images/logo128.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/product_script.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}

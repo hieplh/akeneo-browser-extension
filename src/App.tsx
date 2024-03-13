@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ProductFilters from "./features/products/filters/ProductFilters";
+import Product from "./features/products/Product";
 
 function App() {
   const [menuValue, setMenuValue] = useState("");
@@ -17,7 +17,7 @@ function App() {
   }, []);
 
   if (menuValue.includes("PRODUCT") || menuValue.includes("PRODUCTS")) {
-    return <ProductFilters />;
+    return <Product />;
   } else {
     return (
       <div>

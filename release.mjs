@@ -15,7 +15,7 @@ if (!fs.existsSync(folderPath)) {
 
 // Create a file to stream archive data to.
 const output = fs.createWriteStream(
-  `${folderPath}/akeneo-extension-browser-v-${packageJSON.version}.zip`
+  `${folderPath}/AkEB-ver-${packageJSON.version}.zip`
 );
 const archive = archiver("zip", {
   zlib: { level: 9 }, // Sets the compression level.

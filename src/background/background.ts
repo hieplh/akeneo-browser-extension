@@ -1,3 +1,3 @@
 setInterval(() => {
-  chrome.storage.session.clear();
+  chrome.storage.session.remove("total_variant_products");
 }, 60 * 1000);

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 const sessionInputVariantProduct = "input_variant_product";
@@ -11,7 +10,6 @@ const inputVariantProductPattern = /^(n\/a|\d+\/\d+)$/i;
 export default function VariantProduct() {
   const [tabId, setTabId] = useState(0);
   const [data, setData] = useState<{}>({});
-  // const [totalData, setTotalData] = useState<{}>({});
   const [totalRecords, setTotalRecords] = useState(0);
   const [variantProductCurPage, setVariantProductCurPage] = useState<string[]>([]);
   const [variantProductAllPage, setVariantProductAllPage] = useState(0);
@@ -70,8 +68,8 @@ export default function VariantProduct() {
   };
 
   const getSessionStorageFromWebsite = () => {
-    chrome.tabs.sendMessage(tabId, "getSessionStorage", (session) => {
-      const result = session.data ? JSON.parse(session.data) : undefined;
+    chrome.tabs.sendMessage(tabId, {name: "getSessionStorage"}, (session) => {
+      const result = session!.data ? JSON.parse(session.data) : undefined;
       const data = result!.data ?? {};
       const totalRecords = result!.totalRecords ?? 0;
 
@@ -84,7 +82,6 @@ export default function VariantProduct() {
     chrome.storage.session.remove(sessionTotalVariantProducts);
     highlightVariantProductCurPage("reset");
     setData({});
-    // setTotalData({});
     setVariantProductCurPage([]);
     setVariantProductAllPage(0);
   }
@@ -103,7 +100,6 @@ export default function VariantProduct() {
     chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       // runtime connect: fetchAllVariantProducts
       if (message.name === "processVariantProduct") {
-        // setTotalData(message.data.data);
         if (Object.keys(message.data.data).length > 0) {
           setVariantProductAllPage((e) => e + processDataFromContentScript(message.data.data, message.input).length);
         }
@@ -128,12 +124,6 @@ export default function VariantProduct() {
       countAllVariantProducts();
     }
   }, [data]);
-
-  // useEffect(() => {
-  //   if (Object.keys(totalData).length > 0) {
-  //     setVariantProductAllPage((e) => e + processDataFromContentScript(totalData).length);
-  //   }
-  // }, [totalData]);
 
   useEffect(() => {
     if (variantProductCurPage.length > 0) {
@@ -169,7 +159,7 @@ export default function VariantProduct() {
           <td>{variantProductAllPage}</td>
         </tr>
         <tr>
-          <td className="text-start">Total Products</td>
+          <td className="text-start">Total Records</td>
           <td>{totalRecords}</td>
         </tr>
         <tr>

@@ -68,7 +68,7 @@ export default function VariantProduct() {
   };
 
   const getSessionStorageFromWebsite = () => {
-    chrome.tabs.sendMessage(tabId, {name: "getSessionStorage"}, (session) => {
+    chrome.tabs.sendMessage(tabId, "getSessionStorage", (session) => {
       const result = session!.data ? JSON.parse(session.data) : undefined;
       const data = result!.data ?? {};
       const totalRecords = result!.totalRecords ?? 0;
@@ -80,7 +80,7 @@ export default function VariantProduct() {
 
   const reset = () => {
     chrome.storage.session.remove(sessionTotalVariantProducts);
-    highlightVariantProductCurPage("reset");
+    chrome.tabs.sendMessage(tabId, "reset");
     setData({});
     setVariantProductCurPage([]);
     setVariantProductAllPage(0);
@@ -88,7 +88,9 @@ export default function VariantProduct() {
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-      setTabId(tabs[0].id ?? 0);
+      const tabId = tabs[0].id ?? 0;
+      setTabId(tabId);
+      chrome.tabs.sendMessage(tabId, "reset");
     });
 
     chrome.storage.session.get(sessionInputVariantProduct, (session: any) => {
@@ -165,7 +167,7 @@ export default function VariantProduct() {
         <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
-              <label htmlFor="variant_product">Search: </label>
+              <label htmlFor="variant_product" className="my-auto">Search{" "}</label>
               <input
                 id="variant_product"
                 type="text"
@@ -173,7 +175,9 @@ export default function VariantProduct() {
                 placeholder="N/A or digit/digit"
                 required
                 pattern={inputVariantProductPattern.source}
+                className="form-control"
                 style={{
+                  width: "inherit",
                   borderColor:
                     inputVariantProduct.length <= 0 ||
                     inputVariantProduct.match(inputVariantProductPattern)
@@ -190,7 +194,8 @@ export default function VariantProduct() {
         <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
-              <button type="button" onClick={() => {setInput(""); (document.getElementById('variant_product') as HTMLInputElement).value = '';}}>
+              <button type="button" className="btn btn-outline-secondary"
+                onClick={() => {setInput(""); (document.getElementById('variant_product') as HTMLInputElement).value = '';}}>
                 Reset
               </button>
             </div>

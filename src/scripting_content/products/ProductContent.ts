@@ -10,7 +10,7 @@ el.src = chrome.runtime.getURL("scripts/product_script.js");
 document.documentElement.appendChild(el);
 
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
-  if (message.name === "getSessionStorage") {
+  if (message === "getSessionStorage") {
     const url = sessionStorage.getItem(extension_url);
     const headers = sessionStorage.getItem(extension_headers);
     const data = sessionStorage.getItem(extension_data);
@@ -23,6 +23,10 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
       params: params,
       payload: payload,
     });
+  }
+
+  if (message === "reset") {
+    reset();
   }
 });
 
@@ -42,7 +46,56 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "statusProductCurPage") {
     statusProductCurPage(port);
   }
+
+  if (port.name === "fetchListFamily") {
+    fetchListFamily(port);
+  }
+
+  if (port.name === "fetchTotalFamilyProduct") {
+    fetchTotalFamilyProduct(port);
+  }
+
+  if (port.name === "familyProductCurPage") {
+    familyProductCurPage(port);
+  }
 });
+
+const reset = () => {
+  const xpathStatement =
+    "//div[@id='container']//div[@class='content']//table/tbody";
+  const tbody = document.evaluate(
+    xpathStatement,
+    document.body,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null
+  ).singleNodeValue as HTMLTableRowElement;
+  if (tbody !== null) {
+    tbody.childNodes.forEach((tr: any) => {
+      tr.style.backgroundColor = "";
+    });
+  }
+};
+
+const getExtensionMetric = (): any => {
+  const url = sessionStorage.getItem(extension_url) ?? "";
+  var headers = JSON.parse(sessionStorage.getItem(extension_headers)!) ?? {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  const method = sessionStorage.getItem(extension_method) ?? "POST";
+  const params = sessionStorage.getItem(extension_params) ?? "";
+  const payload = sessionStorage.getItem(extension_payload) ?? "";
+  const data = sessionStorage.getItem(extension_data) ?? "";
+
+  return {
+    url: url,
+    headers: headers,
+    method: method,
+    params: params,
+    payload: payload,
+    data: data,
+  };
+};
 
 const variantProductCurPage = (port: chrome.runtime.Port) => {
   port.onMessage.addListener((message, _) => {
@@ -73,18 +126,13 @@ const variantProductCurPage = (port: chrome.runtime.Port) => {
 
 const fetchAllVariantProducts = (port: chrome.runtime.Port) => {
   port.onMessage.addListener((message, _) => {
-    const method = sessionStorage.getItem(extension_method) ?? "POST";
-    var headers = JSON.parse(sessionStorage.getItem(extension_headers)!) ?? {
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
-    const params = sessionStorage.getItem(extension_params) ?? "";
-    const payload = new URLSearchParams(
-      sessionStorage.getItem(extension_payload) ?? ""
-    );
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    var headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
     payload.set("product-grid[_pager][_page]", "1");
-    const url =
-      (sessionStorage.getItem(extension_url) ?? "") +
-      (params.length > 0 ? `?${params}` : "");
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
 
     fetchVariantProduct(url, headers, method, payload, message);
   });
@@ -153,22 +201,17 @@ const responseVariantProduct = (
 
 const fetchTotalStatus = (port: chrome.runtime.Port) => {
   port.onMessage.addListener((message, port) => {
-    const method = sessionStorage.getItem(extension_method) ?? "POST";
-    var headers = JSON.parse(sessionStorage.getItem(extension_headers)!) ?? {
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
-    const params = sessionStorage.getItem(extension_params) ?? "";
-    const payload = new URLSearchParams(
-      sessionStorage.getItem(extension_payload) ?? ""
-    );
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    var headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
     payload.set("product-grid[_pager][_page]", "1");
     payload.set(
       "product-grid[_filter][enabled][value]",
       message === "Enable" ? "1" : "0"
     );
-    const url =
-      (sessionStorage.getItem(extension_url) ?? "") +
-      (params.length > 0 ? `?${params}` : "");
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
 
     fetch(url, {
       body: payload.toString(),
@@ -201,7 +244,7 @@ const statusProductCurPage = (port: chrome.runtime.Port) => {
       ).singleNodeValue as HTMLTableRowElement;
       if (trElement !== null) {
         switch (message.state) {
-          case 'highlight':
+          case "highlight":
             switch (e.enabled) {
               case true:
                 trElement.style.backgroundColor = "#90ee90";
@@ -211,12 +254,87 @@ const statusProductCurPage = (port: chrome.runtime.Port) => {
                 break;
             }
             break;
-          case 'reset':
+          case "reset":
             trElement.style.backgroundColor = "";
             break;
           default:
             break;
         }
+      }
+    });
+  });
+};
+
+const fetchListFamily = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, port) => {
+    const metric = getExtensionMetric();
+    const headers = metric.headers;
+
+    const url = "/configuration/rest/family/";
+    const sessionParams = new URLSearchParams(metric.params);
+    const params = new URLSearchParams();
+    params.set("options[expanded]", "0");
+    params.set("options[limit]", "20");
+    params.set("options[page]", message.page ? message.page.toString() : "1");
+    params.set(
+      "options[locale]",
+      sessionParams.get("dataLocale") !== null
+        ? sessionParams.get("dataLocale")!
+        : "en_US"
+    );
+    params.set("search", message.input ?? "");
+
+    fetch(url + "?" + params.toString(), {
+      headers: headers,
+      method: "GET",
+    }).then((res: Response) => {
+      res.json().then((data: any) => {
+        port.postMessage(data);
+      });
+    });
+  });
+};
+
+const fetchTotalFamilyProduct = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, port) => {
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    const headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
+    payload.set("product-grid[_pager][_page]", "1");
+    payload.set("product-grid[_filter][family][value][0]", message.startsWith('[') && message.endsWith(']') ? message.substring(1, message.length - 1) : message);
+    payload.set("product-grid[_filter][family][type]", "in");
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
+
+    fetch(url, {
+      body: payload.toString(),
+      headers: headers,
+      method: method,
+    }).then((res) => {
+      res.json().then((res: any) => {
+        if (url.includes("/datagrid/product-grid/load")) {
+          res = JSON.parse(res.data);
+        }
+        port.postMessage(res);
+      });
+    });
+  });
+};
+
+const familyProductCurPage = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    message.data.forEach((e: any) => {
+      const xpathStatement = `//div[@id='container']//div[@class='content']//table/tbody//tr[td[@data-column='label' and .='${e.label}']]`;
+      const trElement = document.evaluate(
+        xpathStatement,
+        document.body,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      ).singleNodeValue as HTMLTableRowElement;;
+      if (trElement !== null) {
+        trElement.style.backgroundColor = message.color;
       }
     });
   });

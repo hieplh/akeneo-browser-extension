@@ -12,7 +12,7 @@ export default function StatusProduct() {
   const [tabId, setTabId] = useState(0);
 
   const fetchData = () => {
-    chrome.tabs.sendMessage(tabId, { name: "getSessionStorage" }, (session) => {
+    chrome.tabs.sendMessage(tabId, "getSessionStorage", (session) => {
       const result = session!.data ? JSON.parse(session.data) : undefined;
       if (result!.data) {
         const data = [] as any;
@@ -36,9 +36,10 @@ export default function StatusProduct() {
   };
 
   const reset = () => {
-    chrome.tabs
-      .connect(tabId, { name: "statusProductCurPage" })
-      .postMessage({ state: "reset", data: data });
+    chrome.tabs.sendMessage(tabId, "reset");
+    setStatus("")
+    setData([]);
+    setTotalStatus(0);
   };
 
   useEffect(() => {
@@ -100,7 +101,7 @@ export default function StatusProduct() {
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={reset}
+                onClick={() => {reset(); setStatus("")}}
               >
                 Reset
               </button>

@@ -1,5 +1,6 @@
 import { useState, Suspense, lazy } from "react";
 
+const FamilyProduct = lazy(() => import("./filters/FamilyProduct"));
 const StatusProduct = lazy(() => import("./filters/StatusProduct"));
 const VariantProduct = lazy(() => import("./filters/VariantProduct"));
 
@@ -11,21 +12,21 @@ export default function Product() {
   };
 
   return (
-    <div style={{ width: 350 }} className="container text-center">
+    <div style={{ minWidth: 350 }} className="container text-center">
       <div className="row row-cols-auto flex-row justify-content-evenly gy-2 my-1">
         <button type="button" className="col" onClick={() => displayFilter(1)}>Family</button>
         <button type="button" className="col" onClick={() => displayFilter(2)}>Status</button>
         <button type="button" className="col" onClick={() => displayFilter(3)}>Complete</button>
         <button type="button" className="col" onClick={() => displayFilter(4)}>Created</button>
-        <button type="button" className="col" onClick={() => displayFilter(5)}>
-          Variant products
-        </button>
-        <button type="button">Quality score</button>
+        <button type="button" className="col" onClick={() => displayFilter(5)}>Variant products</button>
+        <button type="button" className="col" onClick={() => displayFilter(6)}>Quality score</button>
       </div>
       <div>
         <Suspense fallback={<p>Loading...</p>}>
           {(() => {
             switch (filter) {
+              case 1:
+                return <FamilyProduct />
               case 2:
                 return <StatusProduct />
               case 5:

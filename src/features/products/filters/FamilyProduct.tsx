@@ -124,7 +124,7 @@ export default function FamilyProduct() {
       ? Object.keys(listFamily).find((key) => listFamily[key] === input) ??
           input
       : input;
-  }
+  };
 
   const getLabel = (input: string): string => {
     return listFamily[input] ?? input;
@@ -193,31 +193,33 @@ export default function FamilyProduct() {
             className="text-start"
             style={{ backgroundColor: colorFamilyProduct }}
           >
-            Family {inputFamily} on this page
+            <label>Family {inputFamily} on this page</label>
           </td>
           <td style={{ backgroundColor: colorFamilyProduct }}>
             {familyProduct.length}
           </td>
         </tr>
         <tr>
-          <td className="text-start">Total Family {inputFamily}</td>
-          <td>{totalRecords}</td>
-        </tr>
-        <tr>
           <td
             className="text-start"
             style={{ backgroundColor: colorHiddenFamilyProduct }}
           >
-            Family hidden on this page
+            <label>Family hidden on this page</label>
           </td>
           <td style={{ backgroundColor: colorHiddenFamilyProduct }}>
             {familyHiddenProduct.length}
           </td>
         </tr>
         <tr>
+          <td className="text-start">
+            <label>Total Family {inputFamily}</label>
+          </td>
+          <td>{totalRecords}</td>
+        </tr>
+        <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
-              <label htmlFor="family_product" className="my-auto">
+              <label htmlFor="family_product" className="my-auto fw-bold">
                 Search{" "}
               </label>
               <input

@@ -11,30 +11,41 @@ export default function VariantProduct() {
   const [tabId, setTabId] = useState(0);
   const [data, setData] = useState<{}>({});
   const [totalRecords, setTotalRecords] = useState(0);
-  const [variantProductCurPage, setVariantProductCurPage] = useState<string[]>([]);
+  const [variantProductCurPage, setVariantProductCurPage] = useState<string[]>(
+    []
+  );
   const [variantProductAllPage, setVariantProductAllPage] = useState(0);
   const [inputVariantProduct, setInputVariantProduct] = useState("");
-  const [previousInputVariantProduct, setPreviousInputVariantProduct] = useState("");
+  const [previousInputVariantProduct, setPreviousInputVariantProduct] =
+    useState("");
 
-  const highlightVariantProductCurPage = (state: "change_background" | "reset") => {
-    chrome.tabs.connect(tabId, { name: tabConnectVariantProductCurPage }).postMessage({
-      state: state,
-      [tabConnectVariantProductCurPage]: variantProductCurPage,
-    });
+  const highlightVariantProductCurPage = (
+    state: "change_background" | "reset"
+  ) => {
+    chrome.tabs
+      .connect(tabId, { name: tabConnectVariantProductCurPage })
+      .postMessage({
+        state: state,
+        [tabConnectVariantProductCurPage]: variantProductCurPage,
+      });
   };
 
   const setInput = (value: string) => {
     setPreviousInputVariantProduct(inputVariantProduct);
     setInputVariantProduct(value);
     chrome.storage.session.set({ [sessionInputVariantProduct]: value });
-  }
+  };
 
   const matchInputAndVariantProducts = (item: any, input: string): boolean => {
     const splitTotalComplete = input.split("/");
-    if (Array.isArray(item.complete_variant_products) && input.toUpperCase().includes('N/A')) {
+    if (
+      Array.isArray(item.complete_variant_products) &&
+      input.toUpperCase().includes("N/A")
+    ) {
       return true;
     } else if (
-      item.complete_variant_products.complete === Number(splitTotalComplete[0]) &&
+      item.complete_variant_products.complete ===
+        Number(splitTotalComplete[0]) &&
       item.complete_variant_products.total === Number(splitTotalComplete[1])
     ) {
       return true;
@@ -50,21 +61,18 @@ export default function VariantProduct() {
       }
     });
     return result;
-  }
+  };
 
   const countAllVariantProducts = () => {
-    chrome.storage.session.get(
-      sessionTotalVariantProducts,
-      (session) => {
-        if (Object.keys(session).length > 0) {
-          setVariantProductAllPage(session[sessionTotalVariantProducts]);
-        } else {
-          chrome.tabs
-            .connect(tabId, { name: tabConnectFetchAllVariantProducts })
-            .postMessage(inputVariantProduct);
-        }
+    chrome.storage.session.get(sessionTotalVariantProducts, (session) => {
+      if (Object.keys(session).length > 0) {
+        setVariantProductAllPage(session[sessionTotalVariantProducts]);
+      } else {
+        chrome.tabs
+          .connect(tabId, { name: tabConnectFetchAllVariantProducts })
+          .postMessage(inputVariantProduct);
       }
-    );
+    });
   };
 
   const getSessionStorageFromWebsite = () => {
@@ -76,7 +84,7 @@ export default function VariantProduct() {
       setData(data);
       setTotalRecords(totalRecords);
     });
-  }
+  };
 
   const reset = () => {
     chrome.storage.session.remove(sessionTotalVariantProducts);
@@ -84,7 +92,7 @@ export default function VariantProduct() {
     setData({});
     setVariantProductCurPage([]);
     setVariantProductAllPage(0);
-  }
+  };
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
@@ -94,7 +102,10 @@ export default function VariantProduct() {
     });
 
     chrome.storage.session.get(sessionInputVariantProduct, (session: any) => {
-      const value = Object.keys(session).length > 0 ? session[sessionInputVariantProduct] : "";
+      const value =
+        Object.keys(session).length > 0
+          ? session[sessionInputVariantProduct]
+          : "";
       setPreviousInputVariantProduct(value);
       setInputVariantProduct(value);
     });
@@ -103,7 +114,12 @@ export default function VariantProduct() {
       // runtime connect: fetchAllVariantProducts
       if (message.name === "processVariantProduct") {
         if (Object.keys(message.data.data).length > 0) {
-          setVariantProductAllPage((e) => e + processDataFromContentScript(message.data.data, message.input).length);
+          setVariantProductAllPage(
+            (e) =>
+              e +
+              processDataFromContentScript(message.data.data, message.input)
+                .length
+          );
         }
         sendResponse();
       }
@@ -115,14 +131,19 @@ export default function VariantProduct() {
       reset();
     }
 
-    if (inputVariantProduct.length > 0 && inputVariantProduct.match(inputVariantProductPattern)) {
+    if (
+      inputVariantProduct.length > 0 &&
+      inputVariantProduct.match(inputVariantProductPattern)
+    ) {
       getSessionStorageFromWebsite();
     }
   }, [inputVariantProduct]);
 
   useEffect(() => {
     if (Object.keys(data).length > 0) {
-      setVariantProductCurPage(processDataFromContentScript(data, inputVariantProduct));
+      setVariantProductCurPage(
+        processDataFromContentScript(data, inputVariantProduct)
+      );
       countAllVariantProducts();
     }
   }, [data]);
@@ -136,12 +157,15 @@ export default function VariantProduct() {
   useEffect(() => {
     if (variantProductAllPage > 0) {
       chrome.storage.session.get(sessionTotalVariantProducts, (session) => {
-        if (Object.keys(session).length === 0 || session[sessionTotalVariantProducts] < variantProductAllPage) {
+        if (
+          Object.keys(session).length === 0 ||
+          session[sessionTotalVariantProducts] < variantProductAllPage
+        ) {
           chrome.storage.session.set({
             [sessionTotalVariantProducts]: variantProductAllPage,
           });
         }
-      })
+      });
     }
   }, [variantProductAllPage]);
 
@@ -150,24 +174,28 @@ export default function VariantProduct() {
       <tbody>
         <tr>
           <td className="text-start">
-            Variant products {inputVariantProduct} on this page
+            <label>Variant products {inputVariantProduct} on this page</label>
           </td>
           <td>{variantProductCurPage.length}</td>
         </tr>
         <tr>
           <td className="text-start">
-            Variant products {inputVariantProduct} on all pages
+            <label>Variant products {inputVariantProduct} on all pages</label>
           </td>
           <td>{variantProductAllPage}</td>
         </tr>
         <tr>
-          <td className="text-start">Total Records</td>
+          <td className="text-start">
+            <label>Total Records</label>
+          </td>
           <td>{totalRecords}</td>
         </tr>
         <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
-              <label htmlFor="variant_product" className="my-auto">Search{" "}</label>
+              <label htmlFor="variant_product" className="my-auto fw-bold">
+                Search{" "}
+              </label>
               <input
                 id="variant_product"
                 type="text"
@@ -194,8 +222,18 @@ export default function VariantProduct() {
         <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
-              <button type="button" className="btn btn-outline-secondary"
-                onClick={() => {setInput(""); (document.getElementById('variant_product') as HTMLInputElement).value = '';}}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setInput("");
+                  (
+                    document.getElementById(
+                      "variant_product"
+                    ) as HTMLInputElement
+                  ).value = "";
+                }}
+              >
                 Reset
               </button>
             </div>

@@ -58,6 +58,14 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "familyProductCurPage") {
     familyProductCurPage(port);
   }
+
+  if (port.name === "fetchTotalCompleteProduct") {
+    fetchTotalCompleteProduct(port);
+  }
+
+  if (port.name === "completeProductCurPage") {
+    completeProductCurPage(port);
+  }
 });
 
 const reset = () => {
@@ -303,7 +311,12 @@ const fetchTotalFamilyProduct = (port: chrome.runtime.Port) => {
     const params = metric.params;
     const payload = new URLSearchParams(metric.payload);
     payload.set("product-grid[_pager][_page]", "1");
-    payload.set("product-grid[_filter][family][value][0]", message.startsWith('[') && message.endsWith(']') ? message.substring(1, message.length - 1) : message);
+    payload.set(
+      "product-grid[_filter][family][value][0]",
+      message.startsWith("[") && message.endsWith("]")
+        ? message.substring(1, message.length - 1)
+        : message
+    );
     payload.set("product-grid[_filter][family][type]", "in");
     const url = metric.url + (params.length > 0 ? `?${params}` : "");
 
@@ -332,10 +345,56 @@ const familyProductCurPage = (port: chrome.runtime.Port) => {
         null,
         XPathResult.FIRST_ORDERED_NODE_TYPE,
         null
-      ).singleNodeValue as HTMLTableRowElement;;
+      ).singleNodeValue as HTMLTableRowElement;
       if (trElement !== null) {
         trElement.style.backgroundColor = message.color;
       }
     });
   });
-}
+};
+
+const fetchTotalCompleteProduct = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    const headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
+    payload.set("product-grid[_pager][_page]", "1");
+    if (message === 1 || message === 2) {
+      payload.set("product-grid[_filter][completeness][value]", message.toString());
+    }
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
+
+    fetch(url, {
+      body: payload.toString(),
+      headers: headers,
+      method: method,
+    }).then((res) => {
+      res.json().then((res: any) => {
+        if (url.includes("/datagrid/product-grid/load")) {
+          res = JSON.parse(res.data);
+        }
+        port.postMessage(res);
+      });
+    });
+  });
+};
+
+const completeProductCurPage = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    message.data.forEach((e: any) => {
+      const xpathStatement = `//div[@id='container']//div[@class='content']//table/tbody//tr[td[@data-column='label' and .='${e.label}']]`;
+      const trElement = document.evaluate(
+        xpathStatement,
+        document.body,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      ).singleNodeValue as HTMLTableRowElement;
+      if (trElement !== null) {
+        trElement.style.backgroundColor = message.color;
+      }
+    });
+  });
+};

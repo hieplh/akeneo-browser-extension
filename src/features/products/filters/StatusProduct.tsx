@@ -37,14 +37,16 @@ export default function StatusProduct() {
 
   const reset = () => {
     chrome.tabs.sendMessage(tabId, "reset");
-    setStatus("")
+    setStatus("");
     setData([]);
     setTotalStatus(0);
   };
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-      setTabId(tabs[0].id ?? 0);
+      const tabId = tabs[0].id ?? 0;
+      setTabId(tabId);
+      chrome.tabs.sendMessage(tabId, "reset");
     });
 
     chrome.storage.session.get(sessionInputStatus, (session) => {
@@ -59,7 +61,6 @@ export default function StatusProduct() {
   useEffect(() => {
     if (status.length > 0) {
       chrome.storage.session.set({ [sessionInputStatus]: status });
-      reset();
       fetchData();
       fetchTotalStatus();
     }
@@ -77,14 +78,18 @@ export default function StatusProduct() {
     <table className="table align-middle">
       <tbody>
         <tr>
-          <td className="text-start">Status {status} on this page</td>
+          <td className="text-start">
+            <label>Status {status} on this page</label>
+          </td>
           <td>{data.length}</td>
         </tr>
         <tr>
-          <td className="text-start">Total Status {status}</td>
+          <td className="text-start">
+            <label>Total Status {status}</label>
+          </td>
           <td>{totalStatus}</td>
         </tr>
-        <tr>
+        {/* <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">
               <button
@@ -94,14 +99,20 @@ export default function StatusProduct() {
                     ? "btn btn-danger"
                     : "btn btn-outline-danger"
                 }
-                onClick={() => setStatus(constantStatusDisable)}
+                onClick={() => {
+                  reset();
+                  setStatus(constantStatusDisable);
+                }}
               >
                 Disable
               </button>
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => {reset(); setStatus("")}}
+                onClick={() => {
+                  reset();
+                  setStatus("");
+                }}
               >
                 Reset
               </button>
@@ -112,9 +123,75 @@ export default function StatusProduct() {
                     ? "btn btn-success"
                     : "btn btn-outline-success"
                 }
-                onClick={() => setStatus(constantStatusEnable)}
+                onClick={() => {
+                  reset();
+                  setStatus(constantStatusEnable);
+                }}
               >
                 Enable
+              </button>
+            </div>
+          </td>
+        </tr> */}
+        <tr>
+          <td colSpan={2}>
+            <div className="row row-cols-auto flex-row justify-content-evenly">
+              <div className="my-auto text-start w-25">
+                <label htmlFor="complete_product" className="fw-bold">
+                  Status
+                </label>
+              </div>
+              <div className="w-75 row row-cols-auto flex-row justify-content-evenly">
+                <div className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    id="status_disable"
+                    name="status"
+                    value={constantStatusDisable}
+                    checked={status === constantStatusDisable}
+                    onClick={() => {
+                      reset();
+                      setStatus(constantStatusDisable);
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor="status_disable">
+                    Disable
+                  </label>
+                </div>
+                <div className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    id="status_enable"
+                    name="status"
+                    value={constantStatusEnable}
+                    checked={status === constantStatusEnable}
+                    onClick={() => {
+                      reset();
+                      setStatus(constantStatusEnable);
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor="status_enable">
+                    Enable
+                  </label>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colSpan={3}>
+            <div className="row row-cols-auto flex-row justify-content-evenly">
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  reset();
+                  setStatus("");
+                }}
+              >
+                Reset
               </button>
             </div>
           </td>

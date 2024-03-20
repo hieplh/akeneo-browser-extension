@@ -74,6 +74,14 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "createdProductCurPage") {
     createdProductCurPage(port);
   }
+
+  if (port.name === "fetchTotalQualityScoreProduct") {
+    fetchTotalQualityScoreProduct(port);
+  }
+
+  if (port.name === "qualityScoreProductCurPage") {
+    qualityScoreProductCurPage(port);
+  }
 });
 
 const reset = () => {
@@ -456,6 +464,53 @@ const createdProductCurPage = (port: chrome.runtime.Port) => {
       ).singleNodeValue as HTMLTableRowElement;
       if (trElement !== null) {
         trElement.style.backgroundColor = "#90ee90";
+      }
+    });
+  });
+};
+
+const fetchTotalQualityScoreProduct = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    const headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
+    payload.set("product-grid[_pager][_page]", "1");
+    payload.set(
+      "product-grid[_filter][data_quality_insights_score][value][0]",
+      message
+    );
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
+
+    fetch(url, {
+      body: payload.toString(),
+      headers: headers,
+      method: method,
+    }).then((res) => {
+      res.json().then((res: any) => {
+        if (url.includes("/datagrid/product-grid/load")) {
+          res = JSON.parse(res.data);
+        }
+        port.postMessage(res);
+      });
+    });
+  });
+};
+
+const qualityScoreProductCurPage = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    message.data.forEach((e: any) => {
+      const xpathStatement = `//div[@id='container']//div[@class='content']//table/tbody//tr[td[@data-column='label' and .='${e.label}']]`;
+      const trElement = document.evaluate(
+        xpathStatement,
+        document.body,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      ).singleNodeValue as HTMLTableRowElement;
+      if (trElement !== null) {
+        trElement.style.backgroundColor = message.color;
       }
     });
   });

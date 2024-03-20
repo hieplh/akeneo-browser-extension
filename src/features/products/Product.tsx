@@ -5,6 +5,7 @@ const StatusProduct = lazy(() => import("./filters/StatusProduct"));
 const CompleteProduct = lazy(() => import("./filters/CompleteProduct"));
 const CreatedProduct = lazy(() => import("./filters/CreatedProduct"));
 const VariantProduct = lazy(() => import("./filters/VariantProduct"));
+const QualityScoreProduct = lazy(() => import("./filters/QualityInsightScoreProduct"));
 
 export default function Product() {
   const [filter, setFilter] = useState(0);
@@ -45,6 +46,8 @@ export default function Product() {
                 return <CreatedProduct />
               case 5:
                 return <VariantProduct />;
+              case 6:
+                return <QualityScoreProduct />;
               default:
                 return <p>Select button above to using this feature</p>;
             }

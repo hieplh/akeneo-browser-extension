@@ -89,50 +89,6 @@ export default function StatusProduct() {
           </td>
           <td>{totalStatus}</td>
         </tr>
-        {/* <tr>
-          <td colSpan={2}>
-            <div className="row row-cols-auto flex-row justify-content-evenly">
-              <button
-                type="button"
-                className={
-                  status === constantStatusDisable
-                    ? "btn btn-danger"
-                    : "btn btn-outline-danger"
-                }
-                onClick={() => {
-                  reset();
-                  setStatus(constantStatusDisable);
-                }}
-              >
-                Disable
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => {
-                  reset();
-                  setStatus("");
-                }}
-              >
-                Reset
-              </button>
-              <button
-                type="button"
-                className={
-                  status === constantStatusEnable
-                    ? "btn btn-success"
-                    : "btn btn-outline-success"
-                }
-                onClick={() => {
-                  reset();
-                  setStatus(constantStatusEnable);
-                }}
-              >
-                Enable
-              </button>
-            </div>
-          </td>
-        </tr> */}
         <tr>
           <td colSpan={2}>
             <div className="row row-cols-auto flex-row justify-content-evenly">

@@ -3,6 +3,7 @@ import { useState, Suspense, lazy } from "react";
 const FamilyProduct = lazy(() => import("./filters/FamilyProduct"));
 const StatusProduct = lazy(() => import("./filters/StatusProduct"));
 const CompleteProduct = lazy(() => import("./filters/CompleteProduct"));
+const CreatedProduct = lazy(() => import("./filters/CreatedProduct"));
 const VariantProduct = lazy(() => import("./filters/VariantProduct"));
 
 export default function Product() {
@@ -40,6 +41,8 @@ export default function Product() {
                 return <StatusProduct />
               case 3:
                 return <CompleteProduct />
+              case 4:
+                return <CreatedProduct />
               case 5:
                 return <VariantProduct />;
               default:

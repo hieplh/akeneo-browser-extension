@@ -66,6 +66,14 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "completeProductCurPage") {
     completeProductCurPage(port);
   }
+
+  if (port.name === "fetchTotalCreatedProduct") {
+    fetchTotalCreatedProduct(port);
+  }
+
+  if (port.name === "createdProductCurPage") {
+    createdProductCurPage(port);
+  }
 });
 
 const reset = () => {
@@ -362,7 +370,10 @@ const fetchTotalCompleteProduct = (port: chrome.runtime.Port) => {
     const payload = new URLSearchParams(metric.payload);
     payload.set("product-grid[_pager][_page]", "1");
     if (message === 1 || message === 2) {
-      payload.set("product-grid[_filter][completeness][value]", message.toString());
+      payload.set(
+        "product-grid[_filter][completeness][value]",
+        message.toString()
+      );
     }
     const url = metric.url + (params.length > 0 ? `?${params}` : "");
 
@@ -394,6 +405,57 @@ const completeProductCurPage = (port: chrome.runtime.Port) => {
       ).singleNodeValue as HTMLTableRowElement;
       if (trElement !== null) {
         trElement.style.backgroundColor = message.color;
+      }
+    });
+  });
+};
+
+const fetchTotalCreatedProduct = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    const metric = getExtensionMetric();
+    const method = metric.method;
+    const headers = metric.headers;
+    const params = metric.params;
+    const payload = new URLSearchParams(metric.payload);
+    payload.set("product-grid[_pager][_page]", "1");
+    payload.set(
+      "product-grid[_filter][created][value][start]",
+      message
+    );
+    payload.set(
+      "product-grid[_filter][created][value][end]",
+      message
+    );
+    const url = metric.url + (params.length > 0 ? `?${params}` : "");
+
+    fetch(url, {
+      body: payload.toString(),
+      headers: headers,
+      method: method,
+    }).then((res) => {
+      res.json().then((res: any) => {
+        if (url.includes("/datagrid/product-grid/load")) {
+          res = JSON.parse(res.data);
+        }
+        port.postMessage(res);
+      });
+    });
+  });
+};
+
+const createdProductCurPage = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener((message, _) => {
+    message.forEach((e: any) => {
+      const xpathStatement = `//div[@id='container']//div[@class='content']//table/tbody//tr[td[@data-column='label' and .='${e.label}']]`;
+      const trElement = document.evaluate(
+        xpathStatement,
+        document.body,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      ).singleNodeValue as HTMLTableRowElement;
+      if (trElement !== null) {
+        trElement.style.backgroundColor = "#90ee90";
       }
     });
   });
